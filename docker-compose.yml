@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+
+  db:
+    platform: linux/x86_64
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=verysecret
+      - MYSQL_DATABASE=spring
+    ports:
+      - '3306:3306'
