@@ -1,37 +1,32 @@
 package com.example.loudi.services;
 
 import com.example.loudi.models.Product;
+import com.example.loudi.repositories.ProductRepositori;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class ProductService {
-    private List<Product> products = new ArrayList<>();
-    private long ID = 0;
-
-    {
-        products.add(new Product(++ID ,"PS5", "Simpel", 67000, "Krasnoyrsk", "Sony"));
-        products.add(new Product(++ID ,"Imphone 9", "Deckription", 90000, "Moskov", "Apple"));
-    }
-
-    public List<Product> listProducts(){
-        return products;
+    private final ProductRepositori productRepositori;
+    public List<Product> listProducts(String title){
+        if (title != null) productRepositori.findByTitle(title);
+        return productRepositori.findAll();
     }
     public void saveProduct(Product product){
-        product.setId(++ID);
-        products.add(product);
+        log.info("Saving new {}", product);
+        productRepositori.save(product);
     }
 
     public void deleteProdurct(Long id){
-        products.removeIf(product -> product.getId().equals(id));
+        productRepositori.deleteById(id);
     }
 
     public Product getProductById(Long id) {
-        for (Product product : products) {
-            if (product.getId().equals(id)) return product;
-        }
-        return null;
+        return productRepositori.findById(id).orElse(null);
     }
 }
