@@ -2,14 +2,16 @@ package com.example.loudi.services;
 
 import com.example.loudi.models.Image;
 import com.example.loudi.models.Product;
+import com.example.loudi.models.User;
 import com.example.loudi.repositories.ProductRepositori;
-import jakarta.mail.Multipart;
+import com.example.loudi.repositories.UserRepositori;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Service
@@ -17,32 +19,41 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepositori productRepositori;
+    private final UserRepositori userRepositori;
     public List<Product> listProducts(String title){
         if (title != null) return productRepositori.findByTitle(title);
         return productRepositori.findAll();
     }
-    public void saveProduct(Product product, MultipartFile file1, MultipartFile file2, MultipartFile file3) throws IOException {
-        Image image1;
-        Image image2;
-        Image image3;
-        if (file1.getSize() != 0){
-            image1 = toImageEntity(file1);
-            image1.setPreviewImage(true);
-            product.addImageToProduct(image1);
+    public void saveProduct(Principal principal, Product product, MultipartFile... files) throws IOException {
+        User user = getProductByPrincipal(principal);
+        product.setUser(user);
+
+        for (int i = 0; i < files.length; i++) {
+            MultipartFile file = files[i];
+            if (file.getSize() != 0) {
+                Image image = toImageEntity(file);
+                if (i == 0) {
+                    image.setPreviewImage(true);
+                }
+                product.addImageToProduct(image);
+            }
         }
-        if (file2.getSize() != 0){
-            image2 = toImageEntity(file2);
-            product.addImageToProduct(image2);
+
+        log.info("Saving new Product. Title: {}; Author: {}", product.getTitle(), user.getEmail());
+        Product savedProduct = productRepositori.save(product);
+
+        if (!savedProduct.getImages().isEmpty()) {
+            savedProduct.setPreviewImageId(savedProduct.getImages().get(0).getId());
+            productRepositori.save(savedProduct);
         }
-        if (file3.getSize() != 0){
-            image3 = toImageEntity(file3);
-            product.addImageToProduct(image3);
-        }
-        log.info("Saving new Prodect. Title: {}; Author: {}", product.getTitle(), product.getAuthor());
-        Product productFromDb = productRepositori.save(product);
-        productFromDb.setPreviewImageId(productFromDb.getImages().get(0).getId());
-        productRepositori.save(product);
     }
+
+
+    public User getProductByPrincipal(Principal principal) {
+        if(principal == null) return new User();
+        return userRepositori.findByEmail(principal.getName());
+    }
+
     private Image toImageEntity(MultipartFile file) throws IOException {
         Image image = new Image();
         image.setName(file.getName());
