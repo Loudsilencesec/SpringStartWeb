@@ -19,7 +19,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long ip;
+    private Long id;
     @Column(name = "email", unique = true)
     private String email;
     @Column(name = "phoneNumber")
@@ -27,7 +27,7 @@ public class User implements UserDetails {
     @Column(name = "name")
     private String name;
     @Column(name = "active")
-    private boolean acrive;
+    private boolean active;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "image_id")
     private Image avatar;
@@ -45,6 +45,8 @@ public class User implements UserDetails {
     private void init (){
         daraOfCreate = LocalDateTime.now();
     }
+
+    public boolean isAdmin(){ return roles.contains(Role.ROLE_ADMIN);}
 
     // security
 
@@ -75,6 +77,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return acrive;
+        return active;
     }
 }
