@@ -8,7 +8,7 @@
     <title>LoudSell</title>
 </head>
 <body>
-<h1>LoudSell</h1>
+<h1>Хуй на</h1>
 <h4>Авторизация</h4>
 <form action="/login" method="post">
     Эл.Почта: <input type="email" name="username"><br><br>
